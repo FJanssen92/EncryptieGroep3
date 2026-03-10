@@ -32,11 +32,5 @@ namespace EncryptieGroep3.Controllers
         {
             return View("Part4");
         }
-
-        [ActionName("Part 5")]
-        public IActionResult Part5()
-        {
-            return View("Part5");
-        }
     }
 }
