@@ -1,5 +1,231 @@
+@model EncryptieGroep3.Models.RsaViewModel
 @{
-    ViewData["Title"] = "RSA Encryption";
+    ViewData["Title"] = "RSA AES Key Encryption";
 }
 
-<p>RSA Encryption</p>
+<h2>Part 3: RSA AES Key Encryption</h2>
+<p class="text-muted">
+    Encrypt or decrypt an AES key using RSA. Provide your key material below.
+</p>
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+<hr />
+
+@* ===== Encrypt Section ===== *@
+<h4>Encrypt AES Key</h4>
+
+<form asp-action="Part3Encrypt" method="post" id="encryptForm">
+    <div class="mb-3">
+        <label asp-for="AesKey" class="form-label">AES Key (Base64)</label>
+        <input asp-for="AesKey" class="form-control font-monospace" placeholder="Paste your Base64-encoded AES key..." />
+        <span asp-validation-for="AesKey" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PublicKey" class="form-label">RSA Public Key (XML)</label>
+        <div class="input-group mb-2">
+            <input type="file" class="form-control" id="publicKeyFile" accept=".xml" />
+            <span class="input-group-text">or paste below</span>
+        </div>
+        <textarea asp-for="PublicKey" class="form-control font-monospace" rows="4" style="font-size: 0.85rem;"
+                  placeholder="&lt;RSAKeyValue&gt;...&lt;/RSAKeyValue&gt;"></textarea>
+        <span asp-validation-for="PublicKey" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Encrypt</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.EncryptedAesKey))
+{
+    <div class="card border-success mb-4">
+        <div class="card-header bg-success bg-opacity-25">Encrypted AES Key (Base64)</div>
+        <div class="card-body">
+            <textarea id="encryptedKeyOutput" readonly rows="4" class="form-control font-monospace mb-2" style="font-size: 0.85rem;">@Model.EncryptedAesKey</textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyEncryptedKey()">Copy</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadEncryptedKey()">Download .txt</button>
+        </div>
+    </div>
+}
+
+<hr />
+
+@* ===== Decrypt Section ===== *@
+<h4>Decrypt AES Key</h4>
+
+<form asp-action="Part3Decrypt" method="post" id="decryptForm">
+    <div class="mb-3">
+        <label asp-for="EncryptedAesKey" class="form-label">Encrypted AES Key (Base64)</label>
+        <textarea asp-for="EncryptedAesKey" class="form-control font-monospace" rows="4" style="font-size: 0.85rem;"
+                  placeholder="Paste the Base64-encoded encrypted AES key..."></textarea>
+        <span asp-validation-for="EncryptedAesKey" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PrivateKey" class="form-label">RSA Private Key (XML)</label>
+        <div class="input-group mb-2">
+            <input type="file" class="form-control" id="privateKeyFile" accept=".xml" />
+            <span class="input-group-text">or paste below</span>
+        </div>
+        <textarea asp-for="PrivateKey" class="form-control font-monospace" rows="4" style="font-size: 0.85rem;"
+                  placeholder="&lt;RSAKeyValue&gt;...&lt;/RSAKeyValue&gt;"></textarea>
+        <span asp-validation-for="PrivateKey" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Decrypt</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.DecryptedAesKey))
+{
+    <div class="card border-info mb-4">
+        <div class="card-header bg-info bg-opacity-25">Decrypted AES Key (Base64)</div>
+        <div class="card-body">
+            <textarea readonly rows="2" class="form-control font-monospace" style="font-size: 0.85rem;">@Model.DecryptedAesKey</textarea>
+        </div>
+    </div>
+}
+
+<hr />
+
+@* ===== Sign Section ===== *@
+<h4>Sign Data</h4>
+
+<form asp-action="Part3Sign" method="post" id="signForm">
+    <div class="mb-3">
+        <label asp-for="DataToSign" class="form-label">Data to Sign</label>
+        <textarea asp-for="DataToSign" class="form-control font-monospace" rows="3" style="font-size: 0.85rem;"
+                  placeholder="Enter the plaintext data you want to sign..."></textarea>
+        <span asp-validation-for="DataToSign" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SignPrivateKey" class="form-label">RSA Private Key (XML)</label>
+        <div class="input-group mb-2">
+            <input type="file" class="form-control" id="signPrivateKeyFile" accept=".xml" />
+            <span class="input-group-text">or paste below</span>
+        </div>
+        <textarea asp-for="SignPrivateKey" class="form-control font-monospace" rows="4" style="font-size: 0.85rem;"
+                  placeholder="&lt;RSAKeyValue&gt;...&lt;/RSAKeyValue&gt;"></textarea>
+        <span asp-validation-for="SignPrivateKey" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Sign</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.Signature))
+{
+    <div class="card border-success mb-4">
+        <div class="card-header bg-success bg-opacity-25">Signature (Base64)</div>
+        <div class="card-body">
+            <textarea id="signatureOutput" readonly rows="4" class="form-control font-monospace mb-2" style="font-size: 0.85rem;">@Model.Signature</textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copySignature()">Copy</button>
+        </div>
+    </div>
+}
+
+<hr />
+
+@* ===== Verify Section ===== *@
+<h4>Verify Signature</h4>
+
+<form asp-action="Part3Verify" method="post" id="verifyForm">
+    <div class="mb-3">
+        <label asp-for="VerifyData" class="form-label">Data to Verify</label>
+        <textarea asp-for="VerifyData" class="form-control font-monospace" rows="3" style="font-size: 0.85rem;"
+                  placeholder="Enter the original plaintext data..."></textarea>
+        <span asp-validation-for="VerifyData" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Signature" class="form-label">Signature (Base64)</label>
+        <textarea asp-for="Signature" class="form-control font-monospace" rows="4" style="font-size: 0.85rem;"
+                  placeholder="Paste the Base64-encoded signature..."></textarea>
+        <span asp-validation-for="Signature" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="VerifyPublicKey" class="form-label">RSA Public Key (XML)</label>
+        <div class="input-group mb-2">
+            <input type="file" class="form-control" id="verifyPublicKeyFile" accept=".xml" />
+            <span class="input-group-text">or paste below</span>
+        </div>
+        <textarea asp-for="VerifyPublicKey" class="form-control font-monospace" rows="4" style="font-size: 0.85rem;"
+                  placeholder="&lt;RSAKeyValue&gt;...&lt;/RSAKeyValue&gt;"></textarea>
+        <span asp-validation-for="VerifyPublicKey" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Verify</button>
+</form>
+
+@if (Model.SignatureValid.HasValue)
+{
+    if (Model.SignatureValid.Value)
+    {
+        <div class="alert alert-success mb-4">Signature is <strong>valid</strong>.</div>
+    }
+    else
+    {
+        <div class="alert alert-danger mb-4">Signature is <strong>invalid</strong>.</div>
+    }
+}
+
+@section Scripts {
+    <script>
+        // File upload: read .xml file content into the textarea
+        document.getElementById('publicKeyFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            file.text().then(function (text) {
+                document.getElementById('PublicKey').value = text;
+            });
+        });
+
+        document.getElementById('privateKeyFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            file.text().then(function (text) {
+                document.getElementById('PrivateKey').value = text;
+            });
+        });
+
+        function copyEncryptedKey() {
+            const text = document.getElementById('encryptedKeyOutput').value;
+            navigator.clipboard.writeText(text).then(function () {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        document.getElementById('signPrivateKeyFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            file.text().then(function (text) {
+                document.getElementById('SignPrivateKey').value = text;
+            });
+        });
+
+        document.getElementById('verifyPublicKeyFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            file.text().then(function (text) {
+                document.getElementById('VerifyPublicKey').value = text;
+            });
+        });
+
+        function copySignature() {
+            const text = document.getElementById('signatureOutput').value;
+            navigator.clipboard.writeText(text).then(function () {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        function downloadEncryptedKey() {
+            const text = document.getElementById('encryptedKeyOutput').value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'encrypted-aes-key.txt';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+    </script>
+}

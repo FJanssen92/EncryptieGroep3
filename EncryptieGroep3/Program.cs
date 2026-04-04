@@ -1,3 +1,5 @@
+using EncryptieGroep3.Services;
+
 namespace EncryptieGroep3
 {
     public class Program
@@ -7,6 +9,7 @@ namespace EncryptieGroep3
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddSingleton<RsaAesKeyService>();
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
