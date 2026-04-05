@@ -292,5 +292,11 @@ namespace EncryptieGroep3.Controllers
                 throw new Exception("IV moet 16 bytes zijn.");
             }
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part2Clear()
+        {
+            return View("Part2", new AesEncryptionViewModel());
+        }
     }
 }
