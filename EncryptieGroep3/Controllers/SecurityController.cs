@@ -298,5 +298,108 @@ namespace EncryptieGroep3.Controllers
         {
             return View("Part2", new AesEncryptionViewModel());
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part2EncryptFile(IFormFile file, string key, string iv, string selectedMode, string selectedPadding)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Selecteer een bestand voor encryptie.");
+                return View("Part2", new AesEncryptionViewModel());
+            }
+
+            try
+            {
+                byte[] keyBytes = Convert.FromBase64String(key);
+                byte[] ivBytes = Convert.FromBase64String(iv);
+
+                ValidateAesInput(keyBytes, ivBytes);
+
+                CipherMode mode = Enum.Parse<CipherMode>(selectedMode);
+                PaddingMode padding = Enum.Parse<PaddingMode>(selectedPadding);
+
+                using var memoryStream = new MemoryStream();
+                file.CopyTo(memoryStream);
+                byte[] fileBytes = memoryStream.ToArray();
+
+                byte[] encryptedBytes = _aesEncryptionService.EncryptFile(
+                    fileBytes,
+                    keyBytes,
+                    ivBytes,
+                    mode,
+                    padding
+                );
+
+                string encryptedFileName = file.FileName + ".enc";
+
+                return File(encryptedBytes, "application/octet-stream", encryptedFileName);
+            }
+            catch (FormatException)
+            {
+                ModelState.AddModelError(string.Empty, "Key of IV is geen geldige Base64.");
+                return View("Part2", new AesEncryptionViewModel());
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "File encryptie mislukt: " + ex.Message);
+                return View("Part2", new AesEncryptionViewModel());
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part2DecryptFile(IFormFile file, string key, string iv, string selectedMode, string selectedPadding)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Selecteer een encrypted bestand voor decryptie.");
+                return View("Part2", new AesEncryptionViewModel());
+            }
+
+            try
+            {
+                byte[] keyBytes = Convert.FromBase64String(key);
+                byte[] ivBytes = Convert.FromBase64String(iv);
+
+                ValidateAesInput(keyBytes, ivBytes);
+
+                CipherMode mode = Enum.Parse<CipherMode>(selectedMode);
+                PaddingMode padding = Enum.Parse<PaddingMode>(selectedPadding);
+
+                using var memoryStream = new MemoryStream();
+                file.CopyTo(memoryStream);
+                byte[] encryptedBytes = memoryStream.ToArray();
+
+                byte[] decryptedBytes = _aesEncryptionService.DecryptFile(
+                    encryptedBytes,
+                    keyBytes,
+                    ivBytes,
+                    mode,
+                    padding
+                );
+
+                string decryptedFileName = file.FileName.EndsWith(".enc")
+                    ? file.FileName[..^4]
+                    : "decrypted_" + file.FileName;
+
+                return File(decryptedBytes, "application/octet-stream", decryptedFileName);
+            }
+            catch (FormatException)
+            {
+                ModelState.AddModelError(string.Empty, "Key of IV is geen geldige Base64.");
+                return View("Part2", new AesEncryptionViewModel());
+            }
+            catch (CryptographicException)
+            {
+                ModelState.AddModelError(string.Empty, "File decryptie mislukt. Controleer key, IV, mode en padding.");
+                return View("Part2", new AesEncryptionViewModel());
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "File decryptie mislukt: " + ex.Message);
+                return View("Part2", new AesEncryptionViewModel());
+            }
+        }
     }
 }

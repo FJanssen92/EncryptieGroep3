@@ -46,5 +46,36 @@ namespace EncryptieGroep3.Services
                 }
             }
         }
+        public byte[] EncryptFile(byte[] fileBytes, byte[] key, byte[] iv, CipherMode mode, PaddingMode padding)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = mode;
+                aes.Padding = padding;
+
+                using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                {
+                    return encryptor.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
+                }
+            }
+        }
+
+        public byte[] DecryptFile(byte[] encryptedBytes, byte[] key, byte[] iv, CipherMode mode, PaddingMode padding)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = mode;
+                aes.Padding = padding;
+
+                using (ICryptoTransform decryptor = aes.CreateDecryptor())
+                {
+                    return decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
+                }
+            }
+        }
     }
 }
