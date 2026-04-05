@@ -19,7 +19,7 @@ namespace EncryptieGroep3.Services
             return (aes.Key, aes.IV);
         }
 
-        public (string PublicKeyPem, string PrivateKeyPem) GenerateRsaKeyPair(int keySize)
+        public (string PublicKeyXml, string PrivateKeyXml) GenerateRsaKeyPair(int keySize)
         {
             if (keySize != 1024 && keySize != 2048 && keySize != 4096)
             {
@@ -27,8 +27,8 @@ namespace EncryptieGroep3.Services
             }
 
             using RSA rsa = RSA.Create(keySize);
-            string publicKey = rsa.ExportRSAPublicKeyPem();
-            string privateKey = rsa.ExportRSAPrivateKeyPem();
+            string publicKey = rsa.ToXmlString(false);
+            string privateKey = rsa.ToXmlString(true);
 
             return (publicKey, privateKey);
         }

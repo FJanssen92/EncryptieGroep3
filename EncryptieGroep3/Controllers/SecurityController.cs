@@ -54,14 +54,14 @@ namespace EncryptieGroep3.Controllers
                     model.AesIvBase64 = _keyGenerationService.ExportKeyToBase64(aesKeyPair.IV);
                     model.AesIvHex = _keyGenerationService.ExportKeyToHex(aesKeyPair.IV);
 
-                    model.RsaPublicKeyPem = null;
-                    model.RsaPrivateKeyPem = null;
+                    model.RsaPublicKeyXml = null;
+                    model.RsaPrivateKeyXml = null;
                 }
                 else
                 {
                     var rsaKeyPair = _keyGenerationService.GenerateRsaKeyPair(model.RsaKeySize);
-                    model.RsaPublicKeyPem = rsaKeyPair.PublicKeyPem;
-                    model.RsaPrivateKeyPem = rsaKeyPair.PrivateKeyPem;
+                    model.RsaPublicKeyXml = rsaKeyPair.PublicKeyXml;
+                    model.RsaPrivateKeyXml = rsaKeyPair.PrivateKeyXml;
 
                     model.AesKeyBase64 = null;
                     model.AesKeyHex = null;

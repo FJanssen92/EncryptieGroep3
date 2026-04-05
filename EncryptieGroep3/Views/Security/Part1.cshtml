@@ -122,31 +122,31 @@
     </div>
 }
 
-@if (!string.IsNullOrWhiteSpace(Model.RsaPublicKeyPem))
+@if (!string.IsNullOrWhiteSpace(Model.RsaPublicKeyXml))
 {
     <div class="card shadow-sm">
         <div class="card-body">
-            <h4 class="card-title">Generated RSA Key Pair (PEM)</h4>
+            <h4 class="card-title">Generated RSA Key Pair (XML)</h4>
 
             <div class="alert alert-warning">
                 <strong>Never share your private key!</strong> Deel enkel de public key.
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Public Key (PEM)</label>
-                <textarea id="rsaPublicPem" class="form-control font-monospace" rows="7" readonly>@Model.RsaPublicKeyPem</textarea>
+                <label class="form-label">Public Key (XML)</label>
+                <textarea id="rsaPublicXml" class="form-control font-monospace" rows="7" readonly>@Model.RsaPublicKeyXml</textarea>
                 <div class="mt-2 d-flex gap-2">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('rsaPublicPem')">Copy</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('rsa-public-key.pem', document.getElementById('rsaPublicPem').value)">Download Public Key</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('rsaPublicXml')">Copy</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('rsa-public-key.xml', document.getElementById('rsaPublicXml').value)">Download Public Key</button>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Private Key (PEM)</label>
-                <textarea id="rsaPrivatePem" class="form-control font-monospace" rows="10" readonly>@Model.RsaPrivateKeyPem</textarea>
+                <label class="form-label">Private Key (XML)</label>
+                <textarea id="rsaPrivateXml" class="form-control font-monospace" rows="10" readonly>@Model.RsaPrivateKeyXml</textarea>
                 <div class="mt-2 d-flex gap-2">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('rsaPrivatePem')">Copy</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('rsa-private-key.pem', document.getElementById('rsaPrivatePem').value)">Download Private Key</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('rsaPrivateXml')">Copy</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('rsa-private-key.xml', document.getElementById('rsaPrivateXml').value)">Download Private Key</button>
                 </div>
             </div>
         </div>

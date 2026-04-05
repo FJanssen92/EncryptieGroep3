@@ -14,7 +14,7 @@ namespace EncryptieGroep3.Models
         public string? AesIvBase64 { get; set; }
         public string? AesIvHex { get; set; }
 
-        public string? RsaPublicKeyPem { get; set; }
-        public string? RsaPrivateKeyPem { get; set; }
+        public string? RsaPublicKeyXml { get; set; }
+        public string? RsaPrivateKeyXml { get; set; }
     }
 }
