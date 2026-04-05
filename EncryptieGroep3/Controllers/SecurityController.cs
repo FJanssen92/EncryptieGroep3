@@ -319,6 +319,8 @@ namespace EncryptieGroep3.Controllers
                 CipherMode mode = Enum.Parse<CipherMode>(selectedMode);
                 PaddingMode padding = Enum.Parse<PaddingMode>(selectedPadding);
 
+                ValidateFileInput(file, padding);
+
                 using var memoryStream = new MemoryStream();
                 file.CopyTo(memoryStream);
                 byte[] fileBytes = memoryStream.ToArray();
@@ -367,6 +369,8 @@ namespace EncryptieGroep3.Controllers
                 CipherMode mode = Enum.Parse<CipherMode>(selectedMode);
                 PaddingMode padding = Enum.Parse<PaddingMode>(selectedPadding);
 
+                ValidateFileInput(file, padding);
+
                 using var memoryStream = new MemoryStream();
                 file.CopyTo(memoryStream);
                 byte[] encryptedBytes = memoryStream.ToArray();
@@ -399,6 +403,23 @@ namespace EncryptieGroep3.Controllers
             {
                 ModelState.AddModelError(string.Empty, "File decryptie mislukt: " + ex.Message);
                 return View("Part2", new AesEncryptionViewModel());
+            }
+        }
+        private void ValidateFileInput(IFormFile file, PaddingMode padding)
+        {
+            if (file == null || file.Length == 0)
+            {
+                throw new Exception("Er is geen bestand geselecteerd.");
+            }
+
+            if (file.Length > 10 * 1024 * 1024)
+            {
+                throw new Exception("Bestand is te groot. Maximum 10MB.");
+            }
+
+            if (padding == PaddingMode.None && (file.Length % 16 != 0))
+            {
+                throw new Exception("Bij Padding=None moet bestandsgrootte een veelvoud van 16 bytes zijn.");
             }
         }
     }
