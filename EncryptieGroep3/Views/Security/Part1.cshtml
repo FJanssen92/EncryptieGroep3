@@ -1,5 +1,4 @@
 @model EncryptieGroep3.Models.KeyGenerationViewModel
-
 @{
     ViewData["Title"] = "Key Generation";
 }
@@ -12,6 +11,15 @@
     <p class="mb-0"><strong>Never share your private key!</strong></p>
 </div>
 
+<div class="card info-card mb-3">
+    <div class="card-body">
+        <h5 class="card-title mb-2">Wat is key generation?</h5>
+        <p class="mb-1">Je maakt cryptografische sleutels aan voor encryptie en decryptie. AES gebruik je voor snelle data-encryptie, RSA voor key exchange.</p>
+        <p class="mb-1"><strong>Best practices:</strong> gebruik AES-256 en RSA-2048 of 4096, deel private keys nooit, en wis gevoelige data na gebruik.</p>
+        <p class="mb-0">Meer info: <a href="https://learn.microsoft.com/en-us/dotnet/standard/security/cryptography-model" target="_blank" rel="noopener">Microsoft Docs</a> · <a href="https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines" target="_blank" rel="noopener">NIST</a> · <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP</a></p>
+    </div>
+</div>
+
 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
 <form asp-action="Part1Generate" method="post" class="card shadow-sm mb-4">
@@ -20,7 +28,7 @@
 
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label asp-for="KeyType" class="form-label">Key Type</label>
+                <label asp-for="KeyType" class="form-label">Key Type <span data-bs-toggle="tooltip" title="AES = symmetrisch, RSA = asymmetrisch.">ⓘ</span></label>
                 <select asp-for="KeyType" class="form-select" id="keyTypeSelect">
                     <option value="AES">AES</option>
                     <option value="RSA">RSA</option>
@@ -28,7 +36,7 @@
             </div>
 
             <div class="col-md-4" id="aesSizeGroup">
-                <label asp-for="AesKeySize" class="form-label">AES Key Size (bits)</label>
+                <label asp-for="AesKeySize" class="form-label">AES Key Size (bits) <span data-bs-toggle="tooltip" title="Hogere grootte betekent sterkere sleutel. 256-bit is aanbevolen.">ⓘ</span></label>
                 <select asp-for="AesKeySize" class="form-select">
                     <option value="128">128</option>
                     <option value="192">192</option>
@@ -37,7 +45,7 @@
             </div>
 
             <div class="col-md-4" id="rsaSizeGroup">
-                <label asp-for="RsaKeySize" class="form-label">RSA Key Size (bits)</label>
+                <label asp-for="RsaKeySize" class="form-label">RSA Key Size (bits) <span data-bs-toggle="tooltip" title="RSA-2048 of RSA-4096 wordt aanbevolen voor security.">ⓘ</span></label>
                 <select asp-for="RsaKeySize" class="form-select">
                     <option value="1024">1024</option>
                     <option value="2048">2048</option>
@@ -50,6 +58,11 @@
             </div>
         </div>
     </div>
+</form>
+
+<form asp-action="Part1Clear" method="post" class="mb-4">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-outline-secondary">Clear generated data</button>
 </form>
 
 @if (!string.IsNullOrWhiteSpace(Model.AesKeyBase64))

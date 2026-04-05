@@ -8,13 +8,15 @@ namespace EncryptieGroep3.Controllers
 {
     public class SecurityController : Controller
     {
+        private readonly ILogger<SecurityController> _logger;
         private readonly KeyGenerationService _keyGenerationService;
         private readonly RsaAesKeyService _rsaService;
         private readonly AesEncryptionService _aesEncryptionService;
         private readonly HashingService _hashingService;
 
-        public SecurityController(KeyGenerationService keyGenerationService, RsaAesKeyService rsaService, AesEncryptionService aesEncryptionService, HashingService hashingService)
+        public SecurityController(ILogger<SecurityController> logger, KeyGenerationService keyGenerationService, RsaAesKeyService rsaService, AesEncryptionService aesEncryptionService, HashingService hashingService)
         {
+            _logger = logger;
             _keyGenerationService = keyGenerationService;
             _rsaService = rsaService;
             _aesEncryptionService = aesEncryptionService;
@@ -69,10 +71,18 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part1 key generation failed for type {KeyType}.", model.KeyType);
                 ModelState.AddModelError(string.Empty, "Key generation failed: " + ex.Message);
             }
 
             return View("Part1", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part1Clear()
+        {
+            return View("Part1", new KeyGenerationViewModel());
         }
 
         [ActionName("Part 2")]
@@ -108,6 +118,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part3 encrypt failed.");
                 ModelState.AddModelError(string.Empty, "Encryption failed: " + ex.Message);
             }
 
@@ -135,6 +146,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part3 decrypt failed.");
                 ModelState.AddModelError(string.Empty, "Decryption failed: " + ex.Message);
             }
 
@@ -165,6 +177,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part3 sign failed.");
                 ModelState.AddModelError(string.Empty, "Signing failed: " + ex.Message);
             }
 
@@ -201,6 +214,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part3 verify failed.");
                 ModelState.AddModelError(string.Empty, "Verification failed: " + ex.Message);
             }
 
@@ -211,6 +225,13 @@ namespace EncryptieGroep3.Controllers
         public IActionResult Part4()
         {
             return View("Part4", new HashingViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part3Clear()
+        {
+            return View("Part3", new RsaViewModel());
         }
 
         [HttpPost]
@@ -230,6 +251,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part4 hash text failed.");
                 ModelState.AddModelError(string.Empty, "Hashing failed: " + ex.Message);
             }
 
@@ -254,6 +276,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part4 hash file failed.");
                 ModelState.AddModelError(string.Empty, "File hashing failed: " + ex.Message);
             }
 
@@ -282,6 +305,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part4 verify hash failed.");
                 ModelState.AddModelError(string.Empty, "Verification failed: " + ex.Message);
             }
 
@@ -310,6 +334,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part4 HMAC generation failed.");
                 ModelState.AddModelError(string.Empty, "HMAC generation failed: " + ex.Message);
             }
 
@@ -343,6 +368,7 @@ namespace EncryptieGroep3.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part4 HMAC verification failed.");
                 ModelState.AddModelError(string.Empty, "HMAC verification failed: " + ex.Message);
             }
 
@@ -401,10 +427,12 @@ namespace EncryptieGroep3.Controllers
             }
             catch (FormatException)
             {
+                _logger.LogWarning("Part2 text encryption input was not valid Base64.");
                 ModelState.AddModelError(string.Empty, "Key of IV is geen geldige Base64.");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part2 text encryption failed.");
                 ModelState.AddModelError(string.Empty, "Encryptie mislukt: " + ex.Message);
             }
 
@@ -456,14 +484,17 @@ namespace EncryptieGroep3.Controllers
             }
             catch (FormatException)
             {
+                _logger.LogWarning("Part2 text decryption input was not valid Base64.");
                 ModelState.AddModelError(string.Empty, "Input is geen geldige Base64.");
             }
             catch (CryptographicException)
             {
+                _logger.LogWarning("Part2 text decryption failed due to cryptographic validation.");
                 ModelState.AddModelError(string.Empty, "Decryptie mislukt. Controleer key, IV en mode.");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part2 text decryption failed.");
                 ModelState.AddModelError(string.Empty, "Decryptie mislukt: " + ex.Message);
             }
 
@@ -529,11 +560,13 @@ namespace EncryptieGroep3.Controllers
             }
             catch (FormatException)
             {
+                _logger.LogWarning("Part2 file encryption input was not valid Base64.");
                 ModelState.AddModelError(string.Empty, "Key of IV is geen geldige Base64.");
                 return View("Part2", new AesEncryptionViewModel());
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part2 file encryption failed.");
                 ModelState.AddModelError(string.Empty, "File encryptie mislukt: " + ex.Message);
                 return View("Part2", new AesEncryptionViewModel());
             }
@@ -581,16 +614,19 @@ namespace EncryptieGroep3.Controllers
             }
             catch (FormatException)
             {
+                _logger.LogWarning("Part2 file decryption input was not valid Base64.");
                 ModelState.AddModelError(string.Empty, "Key of IV is geen geldige Base64.");
                 return View("Part2", new AesEncryptionViewModel());
             }
             catch (CryptographicException)
             {
+                _logger.LogWarning("Part2 file decryption failed due to cryptographic validation.");
                 ModelState.AddModelError(string.Empty, "File decryptie mislukt. Controleer key, IV, mode en padding.");
                 return View("Part2", new AesEncryptionViewModel());
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Part2 file decryption failed.");
                 ModelState.AddModelError(string.Empty, "File decryptie mislukt: " + ex.Message);
                 return View("Part2", new AesEncryptionViewModel());
             }

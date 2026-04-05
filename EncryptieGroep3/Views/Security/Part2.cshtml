@@ -13,6 +13,15 @@
     <p class="mb-0">De "IV" moet 16 bytes lang zijn en wordt hier ingevoerd in "Base64".</p>
 </div>
 
+<div class="card info-card mb-3">
+    <div class="card-body">
+        <h5 class="card-title mb-2">AES in het kort</h5>
+        <p class="mb-1">AES is symmetrische encryptie: dezelfde key wordt gebruikt om te encrypten en decrypten.</p>
+        <p class="mb-1"><strong>Wanneer gebruiken?</strong> Voor snelle bescherming van tekst en bestanden.</p>
+        <p class="mb-0"><strong>Best practices:</strong> gebruik CBC + PKCS7, bewaar key/IV veilig, en deel de key nooit via een onveilig kanaal.</p>
+    </div>
+</div>
+
 @if (!ViewData.ModelState.IsValid)
 {
     <div class="alert alert-danger">
@@ -50,7 +59,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="SelectedMode" class="form-label">Cipher Mode</label>
+                        <label asp-for="SelectedMode" class="form-label">Cipher Mode <span data-bs-toggle="tooltip" title="CBC is aanbevolen. ECB is minder veilig.">ⓘ</span></label>
                         <select asp-for="SelectedMode" class="form-select">
                             <option value="CBC">CBC</option>
                             <option value="ECB">ECB</option>
@@ -58,7 +67,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="SelectedPadding" class="form-label">Padding</label>
+                        <label asp-for="SelectedPadding" class="form-label">Padding <span data-bs-toggle="tooltip" title="PKCS7 werkt in de meeste scenario's het best.">ⓘ</span></label>
                         <select asp-for="SelectedPadding" class="form-select">
                             <option value="PKCS7">PKCS7</option>
                             <option value="Zeros">Zeros</option>

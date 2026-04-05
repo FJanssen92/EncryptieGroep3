@@ -1,8 +1,51 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Security & Privacy Toolkit";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mb-4">
+    <h1 class="display-5 fw-semibold">Security & Privacy Toolkit</h1>
+    <p class="text-muted">Kies een onderdeel hieronder of via de navigatiebalk.</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6 col-lg-3">
+        <a class="text-decoration-none" asp-controller="Security" asp-action="Part 1">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Part 1</h5>
+                    <p class="card-text text-muted">Key generation (AES/RSA)</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a class="text-decoration-none" asp-controller="Security" asp-action="Part 2">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Part 2</h5>
+                    <p class="card-text text-muted">AES encryptie/decryptie</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a class="text-decoration-none" asp-controller="Security" asp-action="Part 3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Part 3</h5>
+                    <p class="card-text text-muted">RSA key exchange/signature</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a class="text-decoration-none" asp-controller="Security" asp-action="Part 4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Part 4</h5>
+                    <p class="card-text text-muted">Hashing & integrity checks</p>
+                </div>
+            </div>
+        </a>
+    </div>
 </div>

@@ -8,6 +8,19 @@
     Encrypt or decrypt an AES key using RSA. Provide your key material below.
 </p>
 
+<div class="card info-card mb-3">
+    <div class="card-body">
+        <h5 class="card-title mb-2">RSA in het kort</h5>
+        <p class="mb-1">RSA is asymmetrische encryptie: je hebt een public key en private key.</p>
+        <p class="mb-1"><strong>Wanneer gebruiken?</strong> Voor secure key exchange en digitale handtekeningen.</p>
+        <p class="mb-0"><strong>Best practices:</strong> deel alleen de public key, bescherm de private key, gebruik OAEP/SHA-256.</p>
+    </div>
+</div>
+
+<div class="alert alert-warning">
+    <strong>Never share your private key!</strong>
+</div>
+
 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
 <hr />
@@ -34,6 +47,11 @@
     </div>
 
     <button type="submit" class="btn btn-primary mb-3">Encrypt</button>
+</form>
+
+<form asp-action="Part3Clear" method="post" class="mb-3">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-outline-secondary">Clear all fields</button>
 </form>
 
 @if (!string.IsNullOrEmpty(Model.EncryptedAesKey))

@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,9 +10,9 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-dark app-navbar border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">EncryptieGroep3</a>
+                <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">EncryptieGroep3</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -20,18 +20,21 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Security" asp-action="Part 1">Key Generation</a>
+                            <a class="nav-link" asp-area="" asp-controller="Security" asp-action="Part 1">Key Generation</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Security" asp-action="Part 2">AES Encryption & Decryption</a>
+                            <a class="nav-link" asp-area="" asp-controller="Security" asp-action="Part 2">AES Encryption & Decryption</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Security" asp-action="Part 3">RSA Encryption</a>
+                            <a class="nav-link" asp-area="" asp-controller="Security" asp-action="Part 3">RSA Encryption</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Security" asp-action="Part 4">Hashing & Integrity Verification</a>
+                            <a class="nav-link" asp-area="" asp-controller="Security" asp-action="Part 4">Hashing & Integrity Verification</a>
                         </li>
                     </ul>
+                    <span class="navbar-text small text-light opacity-75">
+                        Sneltoetsen: Alt+1..4
+                    </span>
                 </div>
             </div>
         </nav>
@@ -50,6 +53,45 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <div id="globalLoadingOverlay" class="loading-overlay" style="display:none;" aria-live="polite" aria-busy="true">
+        <div class="text-center text-white">
+            <div class="spinner-border" role="status"></div>
+            <div class="mt-2">Bezig met verwerken...</div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (el) {
+                new bootstrap.Tooltip(el);
+            });
+
+            const overlay = document.getElementById('globalLoadingOverlay');
+            document.querySelectorAll('form[method="post"]').forEach(function (form) {
+                form.addEventListener('submit', function () {
+                    if (overlay) {
+                        overlay.style.display = 'flex';
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (!event.altKey) return;
+
+                const key = event.key;
+                const routes = {
+                    '1': '@Url.Action("Part 1", "Security")',
+                    '2': '@Url.Action("Part 2", "Security")',
+                    '3': '@Url.Action("Part 3", "Security")',
+                    '4': '@Url.Action("Part 4", "Security")'
+                };
+
+                if (routes[key]) {
+                    window.location.href = routes[key];
+                }
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
