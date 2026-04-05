@@ -10,6 +10,7 @@ namespace EncryptieGroep3
 
             // Add services to the container.
             builder.Services.AddSingleton<RsaAesKeyService>();
+            builder.Services.AddSingleton<AesEncryptionService>();
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
