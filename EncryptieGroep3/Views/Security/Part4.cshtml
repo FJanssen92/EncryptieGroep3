@@ -1,5 +1,294 @@
+@model EncryptieGroep3.Models.HashingViewModel
 @{
     ViewData["Title"] = "Hashing & Integrity Verification";
+    var algorithms = new[] { "MD5", "SHA1", "SHA256", "SHA384", "SHA512" };
 }
 
-<p>Hashing & Integrity Verification</p>
+<h2>Part 4: Hashing & Integrity Verification</h2>
+<p class="text-muted">
+    Generate hashes, verify data integrity, and use HMAC for authenticated message integrity.
+</p>
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+<hr />
+
+@* ===== Section 1: Hash Text ===== *@
+<h4>4.1 — Hash Text Input</h4>
+
+<form asp-action="Part4Hash" method="post">
+    <div class="mb-3">
+        <label asp-for="InputText" class="form-label">Text to Hash</label>
+        <textarea asp-for="InputText" class="form-control font-monospace" rows="3" style="font-size: 0.85rem;"
+                  placeholder="Enter text to hash..."></textarea>
+        <span asp-validation-for="InputText" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SelectedAlgorithm" class="form-label">Algorithm</label>
+        <select asp-for="SelectedAlgorithm" class="form-select algorithm-select" style="max-width: 200px;">
+            @foreach (var alg in algorithms)
+            {
+                <option value="@alg">@alg</option>
+            }
+        </select>
+    </div>
+
+    <div class="algorithm-warning mb-3" data-algorithm="MD5" style="display: none;">
+        <div class="alert alert-warning mb-0">
+            <strong>MD5</strong> is deprecated and cryptographically broken — for learning purposes only.
+        </div>
+    </div>
+    <div class="algorithm-warning mb-3" data-algorithm="SHA1" style="display: none;">
+        <div class="alert alert-warning mb-0">
+            <strong>SHA1</strong> is considered weak and not recommended for security-critical use.
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Generate Hash</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.HashResult))
+{
+    <div class="card border-success mb-4">
+        <div class="card-header bg-success bg-opacity-25">Hash Result (@Model.SelectedAlgorithm)</div>
+        <div class="card-body">
+            <textarea id="hashResultOutput" readonly rows="2" class="form-control font-monospace mb-2" style="font-size: 0.85rem;">@Model.HashResult</textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('hashResultOutput')">Copy</button>
+        </div>
+    </div>
+}
+
+<hr />
+
+@* ===== Section 2: Hash File ===== *@
+<h4>4.1 — Hash File</h4>
+
+<form asp-action="Part4HashFile" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label">File to Hash</label>
+        <input type="file" name="file" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SelectedFileAlgorithm" class="form-label">Algorithm</label>
+        <select asp-for="SelectedFileAlgorithm" class="form-select algorithm-select" style="max-width: 200px;">
+            @foreach (var alg in algorithms)
+            {
+                <option value="@alg">@alg</option>
+            }
+        </select>
+    </div>
+
+    <div class="algorithm-warning mb-3" data-algorithm="MD5" style="display: none;">
+        <div class="alert alert-warning mb-0">
+            <strong>MD5</strong> is deprecated and cryptographically broken — for learning purposes only.
+        </div>
+    </div>
+    <div class="algorithm-warning mb-3" data-algorithm="SHA1" style="display: none;">
+        <div class="alert alert-warning mb-0">
+            <strong>SHA1</strong> is considered weak and not recommended for security-critical use.
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Hash File</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.FileHashResult))
+{
+    <div class="card border-success mb-4">
+        <div class="card-header bg-success bg-opacity-25">File Hash Result (@Model.SelectedFileAlgorithm)</div>
+        <div class="card-body">
+            <textarea id="fileHashResultOutput" readonly rows="2" class="form-control font-monospace mb-2" style="font-size: 0.85rem;">@Model.FileHashResult</textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('fileHashResultOutput')">Copy</button>
+        </div>
+    </div>
+}
+
+<hr />
+
+@* ===== Section 3: Verify Hash ===== *@
+<h4>4.1 — Verify Hash</h4>
+
+<form asp-action="Part4VerifyHash" method="post">
+    <div class="mb-3">
+        <label asp-for="VerifyInputText" class="form-label">Text to Verify</label>
+        <textarea asp-for="VerifyInputText" class="form-control font-monospace" rows="3" style="font-size: 0.85rem;"
+                  placeholder="Enter the original text..."></textarea>
+        <span asp-validation-for="VerifyInputText" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ExpectedHash" class="form-label">Expected Hash (hex)</label>
+        <textarea asp-for="ExpectedHash" class="form-control font-monospace" rows="2" style="font-size: 0.85rem;"
+                  placeholder="Paste the expected hash value..."></textarea>
+        <span asp-validation-for="ExpectedHash" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="VerifyAlgorithm" class="form-label">Algorithm</label>
+        <select asp-for="VerifyAlgorithm" class="form-select algorithm-select" style="max-width: 200px;">
+            @foreach (var alg in algorithms)
+            {
+                <option value="@alg">@alg</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Verify</button>
+</form>
+
+@if (Model.HashValid.HasValue)
+{
+    if (Model.HashValid.Value)
+    {
+        <div class="alert alert-success mb-4">Hash is <strong>valid</strong> — the text matches the expected hash.</div>
+    }
+    else
+    {
+        <div class="alert alert-danger mb-4">Hash is <strong>invalid</strong> — the text does not match the expected hash.</div>
+    }
+}
+
+<hr />
+
+@* ===== Section 4: HMAC Generation ===== *@
+<h4>4.2 — HMAC Generation</h4>
+
+<form asp-action="Part4Hmac" method="post">
+    <div class="mb-3">
+        <label asp-for="HmacInputText" class="form-label">Text</label>
+        <textarea asp-for="HmacInputText" class="form-control font-monospace" rows="3" style="font-size: 0.85rem;"
+                  placeholder="Enter text for HMAC..."></textarea>
+        <span asp-validation-for="HmacInputText" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HmacKey" class="form-label">Secret Key</label>
+        <input asp-for="HmacKey" type="text" class="form-control font-monospace" style="font-size: 0.85rem;"
+               placeholder="Enter your secret key..." />
+        <span asp-validation-for="HmacKey" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HmacAlgorithm" class="form-label">Algorithm</label>
+        <select asp-for="HmacAlgorithm" class="form-select algorithm-select" style="max-width: 200px;">
+            @foreach (var alg in algorithms)
+            {
+                <option value="@alg">@alg</option>
+            }
+        </select>
+    </div>
+
+    <div class="algorithm-warning mb-3" data-algorithm="MD5" style="display: none;">
+        <div class="alert alert-warning mb-0">
+            <strong>HMAC-MD5</strong> is deprecated — for learning purposes only.
+        </div>
+    </div>
+    <div class="algorithm-warning mb-3" data-algorithm="SHA1" style="display: none;">
+        <div class="alert alert-warning mb-0">
+            <strong>HMAC-SHA1</strong> is considered weak and not recommended for security-critical use.
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Generate HMAC</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.HmacResult))
+{
+    <div class="card border-success mb-4">
+        <div class="card-header bg-success bg-opacity-25">HMAC Result (HMAC-@Model.HmacAlgorithm)</div>
+        <div class="card-body">
+            <textarea id="hmacResultOutput" readonly rows="2" class="form-control font-monospace mb-2" style="font-size: 0.85rem;">@Model.HmacResult</textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('hmacResultOutput')">Copy</button>
+        </div>
+    </div>
+}
+
+<hr />
+
+@* ===== Section 5: HMAC Verification ===== *@
+<h4>4.2 — Verify HMAC</h4>
+
+<form asp-action="Part4VerifyHmac" method="post">
+    <div class="mb-3">
+        <label asp-for="HmacVerifyInput" class="form-label">Text to Verify</label>
+        <textarea asp-for="HmacVerifyInput" class="form-control font-monospace" rows="3" style="font-size: 0.85rem;"
+                  placeholder="Enter the original text..."></textarea>
+        <span asp-validation-for="HmacVerifyInput" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HmacVerifyKey" class="form-label">Secret Key</label>
+        <input asp-for="HmacVerifyKey" type="text" class="form-control font-monospace" style="font-size: 0.85rem;"
+               placeholder="Enter the secret key..." />
+        <span asp-validation-for="HmacVerifyKey" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ExpectedHmac" class="form-label">Expected HMAC (hex)</label>
+        <textarea asp-for="ExpectedHmac" class="form-control font-monospace" rows="2" style="font-size: 0.85rem;"
+                  placeholder="Paste the expected HMAC value..."></textarea>
+        <span asp-validation-for="ExpectedHmac" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HmacVerifyAlgorithm" class="form-label">Algorithm</label>
+        <select asp-for="HmacVerifyAlgorithm" class="form-select algorithm-select" style="max-width: 200px;">
+            @foreach (var alg in algorithms)
+            {
+                <option value="@alg">@alg</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-3">Verify HMAC</button>
+</form>
+
+@if (Model.HmacValid.HasValue)
+{
+    if (Model.HmacValid.Value)
+    {
+        <div class="alert alert-success mb-4">HMAC is <strong>valid</strong> — the message is authentic and unmodified.</div>
+    }
+    else
+    {
+        <div class="alert alert-danger mb-4">HMAC is <strong>invalid</strong> — the message may have been tampered with or the key is incorrect.</div>
+    }
+}
+
+<hr />
+
+@* ===== Section 6: Reset ===== *@
+<form asp-action="Part4Clear" method="post">
+    <button type="submit" class="btn btn-outline-secondary mb-4">Reset All Fields</button>
+</form>
+
+@section Scripts {
+    <script>
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).value;
+            navigator.clipboard.writeText(text).then(function () {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        // Algorithm warning toggle
+        function updateWarnings(selectElement) {
+            const form = selectElement.closest('form');
+            const warnings = form.querySelectorAll('.algorithm-warning');
+            const selected = selectElement.value;
+            warnings.forEach(function (w) {
+                w.style.display = w.getAttribute('data-algorithm') === selected ? 'block' : 'none';
+            });
+        }
+
+        document.querySelectorAll('.algorithm-select').forEach(function (select) {
+            select.addEventListener('change', function () {
+                updateWarnings(this);
+            });
+            // Initialize on page load
+            updateWarnings(select);
+        });
+    </script>
+}

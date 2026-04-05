@@ -10,11 +10,13 @@ namespace EncryptieGroep3.Controllers
     {
         private readonly RsaAesKeyService _rsaService;
         private readonly AesEncryptionService _aesEncryptionService;
+        private readonly HashingService _hashingService;
 
-        public SecurityController(RsaAesKeyService rsaService, AesEncryptionService aesEncryptionService)
+        public SecurityController(RsaAesKeyService rsaService, AesEncryptionService aesEncryptionService, HashingService hashingService)
         {
             _rsaService = rsaService;
             _aesEncryptionService = aesEncryptionService;
+            _hashingService = hashingService;
         }
 
         public IActionResult Index()
@@ -163,7 +165,150 @@ namespace EncryptieGroep3.Controllers
         [ActionName("Part 4")]
         public IActionResult Part4()
         {
-            return View("Part4");
+            return View("Part4", new HashingViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part4Hash(HashingViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.InputText))
+            {
+                ModelState.AddModelError(nameof(model.InputText), "Please enter text to hash.");
+                return View("Part4", model);
+            }
+
+            try
+            {
+                var algorithm = Enum.Parse<HashAlgorithmType>(model.SelectedAlgorithm);
+                model.HashResult = _hashingService.ComputeHash(model.InputText, algorithm);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hashing failed: " + ex.Message);
+            }
+
+            return View("Part4", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part4HashFile(IFormFile file, HashingViewModel model)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Please select a file to hash.");
+                return View("Part4", model);
+            }
+
+            try
+            {
+                var algorithm = Enum.Parse<HashAlgorithmType>(model.SelectedFileAlgorithm);
+                using var stream = file.OpenReadStream();
+                model.FileHashResult = _hashingService.ComputeFileHash(stream, algorithm);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "File hashing failed: " + ex.Message);
+            }
+
+            return View("Part4", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part4VerifyHash(HashingViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.VerifyInputText))
+            {
+                ModelState.AddModelError(nameof(model.VerifyInputText), "Please enter text to verify.");
+                return View("Part4", model);
+            }
+            if (string.IsNullOrWhiteSpace(model.ExpectedHash))
+            {
+                ModelState.AddModelError(nameof(model.ExpectedHash), "Please enter the expected hash.");
+                return View("Part4", model);
+            }
+
+            try
+            {
+                var algorithm = Enum.Parse<HashAlgorithmType>(model.VerifyAlgorithm);
+                model.HashValid = _hashingService.VerifyHash(model.VerifyInputText, model.ExpectedHash, algorithm);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Verification failed: " + ex.Message);
+            }
+
+            return View("Part4", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part4Hmac(HashingViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.HmacInputText))
+            {
+                ModelState.AddModelError(nameof(model.HmacInputText), "Please enter text for HMAC.");
+                return View("Part4", model);
+            }
+            if (string.IsNullOrWhiteSpace(model.HmacKey))
+            {
+                ModelState.AddModelError(nameof(model.HmacKey), "Please enter a secret key.");
+                return View("Part4", model);
+            }
+
+            try
+            {
+                var algorithm = Enum.Parse<HashAlgorithmType>(model.HmacAlgorithm);
+                model.HmacResult = _hashingService.ComputeHmac(model.HmacInputText, model.HmacKey, algorithm);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "HMAC generation failed: " + ex.Message);
+            }
+
+            return View("Part4", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part4VerifyHmac(HashingViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.HmacVerifyInput))
+            {
+                ModelState.AddModelError(nameof(model.HmacVerifyInput), "Please enter text to verify.");
+                return View("Part4", model);
+            }
+            if (string.IsNullOrWhiteSpace(model.HmacVerifyKey))
+            {
+                ModelState.AddModelError(nameof(model.HmacVerifyKey), "Please enter the secret key.");
+                return View("Part4", model);
+            }
+            if (string.IsNullOrWhiteSpace(model.ExpectedHmac))
+            {
+                ModelState.AddModelError(nameof(model.ExpectedHmac), "Please enter the expected HMAC.");
+                return View("Part4", model);
+            }
+
+            try
+            {
+                var algorithm = Enum.Parse<HashAlgorithmType>(model.HmacVerifyAlgorithm);
+                model.HmacValid = _hashingService.VerifyHmac(model.HmacVerifyInput, model.HmacVerifyKey, model.ExpectedHmac, algorithm);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "HMAC verification failed: " + ex.Message);
+            }
+
+            return View("Part4", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part4Clear()
+        {
+            return View("Part4", new HashingViewModel());
         }
 
 
