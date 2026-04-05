@@ -9,10 +9,12 @@ namespace EncryptieGroep3.Controllers
     public class SecurityController : Controller
     {
         private readonly RsaAesKeyService _rsaService;
+        private readonly AesEncryptionService _aesEncryptionService;
 
-        public SecurityController(RsaAesKeyService rsaService)
+        public SecurityController(RsaAesKeyService rsaService, AesEncryptionService aesEncryptionService)
         {
             _rsaService = rsaService;
+            _aesEncryptionService = aesEncryptionService;
         }
 
         public IActionResult Index()
@@ -29,7 +31,7 @@ namespace EncryptieGroep3.Controllers
         [ActionName("Part 2")]
         public IActionResult Part2()
         {
-            return View("Part2");
+            return View("Part2", new AesEncryptionViewModel());
         }
 
         [ActionName("Part 3")]
@@ -162,6 +164,133 @@ namespace EncryptieGroep3.Controllers
         public IActionResult Part4()
         {
             return View("Part4");
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part2Encrypt(AesEncryptionViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.PlainText))
+            {
+                ModelState.AddModelError(nameof(model.PlainText), "Geef plaintext in.");
+                return View("Part2", model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Key))
+            {
+                ModelState.AddModelError(nameof(model.Key), "Geef een AES key in (Base64).");
+                return View("Part2", model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.IV))
+            {
+                ModelState.AddModelError(nameof(model.IV), "Geef een IV in (Base64).");
+                return View("Part2", model);
+            }
+
+            try
+            {
+                byte[] keyBytes = Convert.FromBase64String(model.Key);
+                byte[] ivBytes = Convert.FromBase64String(model.IV);
+
+                ValidateAesInput(keyBytes, ivBytes);
+
+                CipherMode mode = Enum.Parse<CipherMode>(model.SelectedMode);
+                PaddingMode padding = Enum.Parse<PaddingMode>(model.SelectedPadding);
+
+                EncryptionResult result = _aesEncryptionService.Encrypt(
+                    model.PlainText,
+                    keyBytes,
+                    ivBytes,
+                    mode,
+                    padding
+                );
+
+                model.Result = result.CipherTextBase64;
+            }
+            catch (FormatException)
+            {
+                ModelState.AddModelError(string.Empty, "Key of IV is geen geldige Base64.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Encryptie mislukt: " + ex.Message);
+            }
+
+            return View("Part2", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part2Decrypt(AesEncryptionViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.CipherText))
+            {
+                ModelState.AddModelError(nameof(model.CipherText), "Geef ciphertext in (Base64).");
+                return View("Part2", model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Key))
+            {
+                ModelState.AddModelError(nameof(model.Key), "Geef een AES key in (Base64).");
+                return View("Part2", model);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.IV))
+            {
+                ModelState.AddModelError(nameof(model.IV), "Geef een IV in (Base64).");
+                return View("Part2", model);
+            }
+
+            try
+            {
+                byte[] cipherBytes = Convert.FromBase64String(model.CipherText);
+                byte[] keyBytes = Convert.FromBase64String(model.Key);
+                byte[] ivBytes = Convert.FromBase64String(model.IV);
+
+                ValidateAesInput(keyBytes, ivBytes);
+
+                CipherMode mode = Enum.Parse<CipherMode>(model.SelectedMode);
+                PaddingMode padding = Enum.Parse<PaddingMode>(model.SelectedPadding);
+
+                string plainText = _aesEncryptionService.Decrypt(
+                    cipherBytes,
+                    keyBytes,
+                    ivBytes,
+                    mode,
+                    padding
+                );
+
+                model.Result = plainText;
+            }
+            catch (FormatException)
+            {
+                ModelState.AddModelError(string.Empty, "Input is geen geldige Base64.");
+            }
+            catch (CryptographicException)
+            {
+                ModelState.AddModelError(string.Empty, "Decryptie mislukt. Controleer key, IV en mode.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Decryptie mislukt: " + ex.Message);
+            }
+
+            return View("Part2", model);
+        }
+
+        private void ValidateAesInput(byte[] keyBytes, byte[] ivBytes)
+        {
+            if (keyBytes.Length != 16 && keyBytes.Length != 24 && keyBytes.Length != 32)
+            {
+                throw new Exception("AES key moet 128, 192 of 256 bit zijn.");
+            }
+
+            if (ivBytes.Length != 16)
+            {
+                throw new Exception("IV moet 16 bytes zijn.");
+            }
         }
     }
 }
