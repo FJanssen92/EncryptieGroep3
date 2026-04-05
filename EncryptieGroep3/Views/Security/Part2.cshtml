@@ -6,12 +6,12 @@
 
 <h1>Part 2: AES Encryption & Decryption</h1>
 
-<p>
-    Op deze pagina kun je tekst encrypten en decrypten met AES.
-    Gebruik een geldige AES key en een IV in Base64-formaat.
-</p>
-
-<hr />
+<div class="alert alert-info">
+    <p class="mb-1">"AES" is symmetrische encryptie.</p>
+    <p class="mb-1">Gebruik bij voorkeur "CBC" met "PKCS7" padding.</p>
+    <p class="mb-1">"ECB" is minder veilig en wordt vooral gebruikt om het verschil in modi te tonen.</p>
+    <p class="mb-0">De "IV" moet 16 bytes lang zijn en wordt hier ingevoerd in "Base64".</p>
+</div>
 
 @if (!ViewData.ModelState.IsValid)
 {
@@ -25,96 +25,106 @@
     </div>
 }
 
-<div class="row">
-    <div class="col-md-6">
-        <h3>Encrypt</h3>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title">Encrypt</h3>
 
-        <form asp-action="Part2Encrypt" method="post">
-            @Html.AntiForgeryToken()
+                <form asp-action="Part2Encrypt" method="post">
+                    @Html.AntiForgeryToken()
 
-            <div class="mb-3">
-                <label asp-for="PlainText" class="form-label">Plaintext</label>
-                <textarea asp-for="PlainText" class="form-control" rows="6"></textarea>
+                    <div class="mb-3">
+                        <label asp-for="PlainText" class="form-label">Plaintext</label>
+                        <textarea asp-for="PlainText" class="form-control" rows="6"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Key" class="form-label">AES Key (Base64)</label>
+                        <input asp-for="Key" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="IV" class="form-label">IV (Base64)</label>
+                        <input asp-for="IV" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SelectedMode" class="form-label">Cipher Mode</label>
+                        <select asp-for="SelectedMode" class="form-select">
+                            <option value="CBC">CBC</option>
+                            <option value="ECB">ECB</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SelectedPadding" class="form-label">Padding</label>
+                        <select asp-for="SelectedPadding" class="form-select">
+                            <option value="PKCS7">PKCS7</option>
+                            <option value="Zeros">Zeros</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Encrypt</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label asp-for="Key" class="form-label">AES Key (Base64)</label>
-                <input asp-for="Key" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="IV" class="form-label">IV (Base64)</label>
-                <input asp-for="IV" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="SelectedMode" class="form-label">Cipher Mode</label>
-                <select asp-for="SelectedMode" class="form-select">
-                    <option value="CBC">CBC</option>
-                    <option value="ECB">ECB</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="SelectedPadding" class="form-label">Padding</label>
-                <select asp-for="SelectedPadding" class="form-select">
-                    <option value="PKCS7">PKCS7</option>
-                    <option value="Zeros">Zeros</option>
-                    <option value="None">None</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Encrypt</button>
-        </form>
+        </div>
     </div>
 
-    <div class="col-md-6">
-        <h3>Decrypt</h3>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title">Decrypt</h3>
 
-        <form asp-action="Part2Decrypt" method="post">
-            @Html.AntiForgeryToken()
+                <form asp-action="Part2Decrypt" method="post">
+                    @Html.AntiForgeryToken()
 
-            <div class="mb-3">
-                <label asp-for="CipherText" class="form-label">Ciphertext (Base64)</label>
-                <textarea asp-for="CipherText" class="form-control" rows="6"></textarea>
+                    <div class="mb-3">
+                        <label asp-for="CipherText" class="form-label">Ciphertext (Base64)</label>
+                        <textarea asp-for="CipherText" class="form-control" rows="6"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Key" class="form-label">AES Key (Base64)</label>
+                        <input asp-for="Key" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="IV" class="form-label">IV (Base64)</label>
+                        <input asp-for="IV" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SelectedMode" class="form-label">Cipher Mode</label>
+                        <select asp-for="SelectedMode" class="form-select">
+                            <option value="CBC">CBC</option>
+                            <option value="ECB">ECB</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SelectedPadding" class="form-label">Padding</label>
+                        <select asp-for="SelectedPadding" class="form-select">
+                            <option value="PKCS7">PKCS7</option>
+                            <option value="Zeros">Zeros</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Decrypt</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label asp-for="Key" class="form-label">AES Key (Base64)</label>
-                <input asp-for="Key" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="IV" class="form-label">IV (Base64)</label>
-                <input asp-for="IV" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="SelectedMode" class="form-label">Cipher Mode</label>
-                <select asp-for="SelectedMode" class="form-select">
-                    <option value="CBC">CBC</option>
-                    <option value="ECB">ECB</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="SelectedPadding" class="form-label">Padding</label>
-                <select asp-for="SelectedPadding" class="form-select">
-                    <option value="PKCS7">PKCS7</option>
-                    <option value="Zeros">Zeros</option>
-                    <option value="None">None</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-success">Decrypt</button>
-        </form>
+        </div>
     </div>
 </div>
 
-<hr />
-
 @if (!string.IsNullOrWhiteSpace(Model.Result))
 {
-    <h3>Resultaat</h3>
-    <textarea class="form-control" rows="6" readonly>@Model.Result</textarea>
+    <div class="card mt-4 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">Resultaat</h3>
+            <textarea class="form-control" rows="6" readonly>@Model.Result</textarea>
+        </div>
+    </div>
 }
