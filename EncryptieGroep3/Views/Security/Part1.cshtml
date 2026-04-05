@@ -1,5 +1,190 @@
+@model EncryptieGroep3.Models.KeyGenerationViewModel
+
 @{
     ViewData["Title"] = "Key Generation";
 }
 
-<p>Key Generation</p>
+<h2>Part 1: Key Generation</h2>
+
+<div class="alert alert-info">
+    <p class="mb-1">Genereer hier AES of RSA sleutels voor de andere onderdelen.</p>
+    <p class="mb-1">Aanbevolen: AES-256 en RSA-2048 of hoger.</p>
+    <p class="mb-0"><strong>Never share your private key!</strong></p>
+</div>
+
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+<form asp-action="Part1Generate" method="post" class="card shadow-sm mb-4">
+    <div class="card-body">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label asp-for="KeyType" class="form-label">Key Type</label>
+                <select asp-for="KeyType" class="form-select" id="keyTypeSelect">
+                    <option value="AES">AES</option>
+                    <option value="RSA">RSA</option>
+                </select>
+            </div>
+
+            <div class="col-md-4" id="aesSizeGroup">
+                <label asp-for="AesKeySize" class="form-label">AES Key Size (bits)</label>
+                <select asp-for="AesKeySize" class="form-select">
+                    <option value="128">128</option>
+                    <option value="192">192</option>
+                    <option value="256">256</option>
+                </select>
+            </div>
+
+            <div class="col-md-4" id="rsaSizeGroup">
+                <label asp-for="RsaKeySize" class="form-label">RSA Key Size (bits)</label>
+                <select asp-for="RsaKeySize" class="form-select">
+                    <option value="1024">1024</option>
+                    <option value="2048">2048</option>
+                    <option value="4096">4096</option>
+                </select>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Generate</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.AesKeyBase64))
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Generated AES Key + IV</h4>
+
+            <div class="mb-3">
+                <label asp-for="SelectedAesFormat" class="form-label">Format</label>
+                <select asp-for="SelectedAesFormat" class="form-select" id="aesFormatSelect" style="max-width: 200px;">
+                    <option value="Base64">Base64</option>
+                    <option value="Hex">Hex</option>
+                </select>
+            </div>
+
+            <div id="aesBase64Block">
+                <div class="mb-3">
+                    <label class="form-label">AES Key (Base64)</label>
+                    <textarea id="aesKeyBase64" class="form-control font-monospace" rows="2" readonly>@Model.AesKeyBase64</textarea>
+                    <div class="mt-2 d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('aesKeyBase64')">Copy</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('aes-key-base64.txt', document.getElementById('aesKeyBase64').value)">Download</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">IV (Base64)</label>
+                    <textarea id="aesIvBase64" class="form-control font-monospace" rows="2" readonly>@Model.AesIvBase64</textarea>
+                    <div class="mt-2 d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('aesIvBase64')">Copy</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('aes-iv-base64.txt', document.getElementById('aesIvBase64').value)">Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aesHexBlock">
+                <div class="mb-3">
+                    <label class="form-label">AES Key (Hex)</label>
+                    <textarea id="aesKeyHex" class="form-control font-monospace" rows="2" readonly>@Model.AesKeyHex</textarea>
+                    <div class="mt-2 d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('aesKeyHex')">Copy</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('aes-key-hex.txt', document.getElementById('aesKeyHex').value)">Download</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">IV (Hex)</label>
+                    <textarea id="aesIvHex" class="form-control font-monospace" rows="2" readonly>@Model.AesIvHex</textarea>
+                    <div class="mt-2 d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('aesIvHex')">Copy</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('aes-iv-hex.txt', document.getElementById('aesIvHex').value)">Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.RsaPublicKeyPem))
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title">Generated RSA Key Pair (PEM)</h4>
+
+            <div class="alert alert-warning">
+                <strong>Never share your private key!</strong> Deel enkel de public key.
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Public Key (PEM)</label>
+                <textarea id="rsaPublicPem" class="form-control font-monospace" rows="7" readonly>@Model.RsaPublicKeyPem</textarea>
+                <div class="mt-2 d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('rsaPublicPem')">Copy</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('rsa-public-key.pem', document.getElementById('rsaPublicPem').value)">Download Public Key</button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Private Key (PEM)</label>
+                <textarea id="rsaPrivatePem" class="form-control font-monospace" rows="10" readonly>@Model.RsaPrivateKeyPem</textarea>
+                <div class="mt-2 d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyText('rsaPrivatePem')">Copy</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadText('rsa-private-key.pem', document.getElementById('rsaPrivatePem').value)">Download Private Key</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function toggleKeySizeGroups() {
+            const keyType = document.getElementById('keyTypeSelect').value;
+            document.getElementById('aesSizeGroup').style.display = keyType === 'AES' ? 'block' : 'none';
+            document.getElementById('rsaSizeGroup').style.display = keyType === 'RSA' ? 'block' : 'none';
+        }
+
+        function toggleAesFormat() {
+            const selector = document.getElementById('aesFormatSelect');
+            if (!selector) return;
+
+            const selected = selector.value;
+            const base64Block = document.getElementById('aesBase64Block');
+            const hexBlock = document.getElementById('aesHexBlock');
+
+            if (base64Block && hexBlock) {
+                base64Block.style.display = selected === 'Base64' ? 'block' : 'none';
+                hexBlock.style.display = selected === 'Hex' ? 'block' : 'none';
+            }
+        }
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).value;
+            navigator.clipboard.writeText(text).then(function () {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        function downloadText(fileName, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        document.getElementById('keyTypeSelect').addEventListener('change', toggleKeySizeGroups);
+        toggleKeySizeGroups();
+
+        const aesFormatElement = document.getElementById('aesFormatSelect');
+        if (aesFormatElement) {
+            aesFormatElement.addEventListener('change', toggleAesFormat);
+            toggleAesFormat();
+        }
+    </script>
+}

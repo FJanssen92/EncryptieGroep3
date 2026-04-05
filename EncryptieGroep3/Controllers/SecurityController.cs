@@ -8,12 +8,14 @@ namespace EncryptieGroep3.Controllers
 {
     public class SecurityController : Controller
     {
+        private readonly KeyGenerationService _keyGenerationService;
         private readonly RsaAesKeyService _rsaService;
         private readonly AesEncryptionService _aesEncryptionService;
         private readonly HashingService _hashingService;
 
-        public SecurityController(RsaAesKeyService rsaService, AesEncryptionService aesEncryptionService, HashingService hashingService)
+        public SecurityController(KeyGenerationService keyGenerationService, RsaAesKeyService rsaService, AesEncryptionService aesEncryptionService, HashingService hashingService)
         {
+            _keyGenerationService = keyGenerationService;
             _rsaService = rsaService;
             _aesEncryptionService = aesEncryptionService;
             _hashingService = hashingService;
@@ -27,7 +29,50 @@ namespace EncryptieGroep3.Controllers
         [ActionName("Part 1")]
         public IActionResult Part1()
         {
-            return View("Part1");
+            return View("Part1", new KeyGenerationViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Part1Generate(KeyGenerationViewModel model)
+        {
+            if (model.KeyType != "AES" && model.KeyType != "RSA")
+            {
+                ModelState.AddModelError(nameof(model.KeyType), "Selecteer een geldig key type.");
+                return View("Part1", model);
+            }
+
+            try
+            {
+                if (model.KeyType == "AES")
+                {
+                    var aesKeyPair = _keyGenerationService.GenerateAesKeyPair(model.AesKeySize);
+                    model.AesKeyBase64 = _keyGenerationService.ExportKeyToBase64(aesKeyPair.Key);
+                    model.AesKeyHex = _keyGenerationService.ExportKeyToHex(aesKeyPair.Key);
+                    model.AesIvBase64 = _keyGenerationService.ExportKeyToBase64(aesKeyPair.IV);
+                    model.AesIvHex = _keyGenerationService.ExportKeyToHex(aesKeyPair.IV);
+
+                    model.RsaPublicKeyPem = null;
+                    model.RsaPrivateKeyPem = null;
+                }
+                else
+                {
+                    var rsaKeyPair = _keyGenerationService.GenerateRsaKeyPair(model.RsaKeySize);
+                    model.RsaPublicKeyPem = rsaKeyPair.PublicKeyPem;
+                    model.RsaPrivateKeyPem = rsaKeyPair.PrivateKeyPem;
+
+                    model.AesKeyBase64 = null;
+                    model.AesKeyHex = null;
+                    model.AesIvBase64 = null;
+                    model.AesIvHex = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Key generation failed: " + ex.Message);
+            }
+
+            return View("Part1", model);
         }
 
         [ActionName("Part 2")]
