@@ -1,5 +1,120 @@
+@model EncryptieGroep3.Models.AesEncryptionViewModel
+
 @{
     ViewData["Title"] = "AES Encryption & Decryption";
 }
 
-<p>AES Encryption & Decryption</p>
+<h1>Part 2: AES Encryption & Decryption</h1>
+
+<p>
+    Op deze pagina kun je tekst encrypten en decrypten met AES.
+    Gebruik een geldige AES key en een IV in Base64-formaat.
+</p>
+
+<hr />
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <h3>Encrypt</h3>
+
+        <form asp-action="Part2Encrypt" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="PlainText" class="form-label">Plaintext</label>
+                <textarea asp-for="PlainText" class="form-control" rows="6"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Key" class="form-label">AES Key (Base64)</label>
+                <input asp-for="Key" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="IV" class="form-label">IV (Base64)</label>
+                <input asp-for="IV" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SelectedMode" class="form-label">Cipher Mode</label>
+                <select asp-for="SelectedMode" class="form-select">
+                    <option value="CBC">CBC</option>
+                    <option value="ECB">ECB</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SelectedPadding" class="form-label">Padding</label>
+                <select asp-for="SelectedPadding" class="form-select">
+                    <option value="PKCS7">PKCS7</option>
+                    <option value="Zeros">Zeros</option>
+                    <option value="None">None</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Encrypt</button>
+        </form>
+    </div>
+
+    <div class="col-md-6">
+        <h3>Decrypt</h3>
+
+        <form asp-action="Part2Decrypt" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="CipherText" class="form-label">Ciphertext (Base64)</label>
+                <textarea asp-for="CipherText" class="form-control" rows="6"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Key" class="form-label">AES Key (Base64)</label>
+                <input asp-for="Key" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="IV" class="form-label">IV (Base64)</label>
+                <input asp-for="IV" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SelectedMode" class="form-label">Cipher Mode</label>
+                <select asp-for="SelectedMode" class="form-select">
+                    <option value="CBC">CBC</option>
+                    <option value="ECB">ECB</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SelectedPadding" class="form-label">Padding</label>
+                <select asp-for="SelectedPadding" class="form-select">
+                    <option value="PKCS7">PKCS7</option>
+                    <option value="Zeros">Zeros</option>
+                    <option value="None">None</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success">Decrypt</button>
+        </form>
+    </div>
+</div>
+
+<hr />
+
+@if (!string.IsNullOrWhiteSpace(Model.Result))
+{
+    <h3>Resultaat</h3>
+    <textarea class="form-control" rows="6" readonly>@Model.Result</textarea>
+}
