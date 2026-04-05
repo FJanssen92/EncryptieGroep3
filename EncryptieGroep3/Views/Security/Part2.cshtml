@@ -134,91 +134,106 @@
 </form>
 
 <hr />
+<hr />
+
+<div class="alert alert-info">
+    <p class="mb-1">File Encryption gebruikt dezelfde AES instellingen als text encryptie.</p>
+    <p class="mb-1">Gebruik bij voorkeur "CBC" met "PKCS7" padding.</p>
+    <p class="mb-0">Na encryptie of decryptie wordt het resultaat automatisch als bestand gedownload.</p>
+</div>
 
 <h2>File Encryption & Decryption</h2>
 
-<div class="row">
-    <div class="col-md-6">
-        <h3>Encrypt File</h3>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title">Encrypt File</h3>
 
-        <form asp-action="Part2EncryptFile" method="post" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
+                <form asp-action="Part2EncryptFile" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
 
-            <div class="mb-3">
-                <label class="form-label">Bestand</label>
-                <input type="file" name="file" class="form-control" />
+                    <div class="mb-3">
+                        <label class="form-label">Bestand uploaden</label>
+                        <input type="file" name="file" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">AES Key (Base64)</label>
+                        <input type="text" name="key" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">IV (Base64)</label>
+                        <input type="text" name="iv" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cipher Mode</label>
+                        <select name="selectedMode" class="form-select">
+                            <option value="CBC">CBC</option>
+                            <option value="ECB">ECB</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Padding</label>
+                        <select name="selectedPadding" class="form-select">
+                            <option value="PKCS7">PKCS7</option>
+                            <option value="Zeros">Zeros</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Encrypt File</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">AES Key (Base64)</label>
-                <input type="text" name="key" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">IV (Base64)</label>
-                <input type="text" name="iv" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Cipher Mode</label>
-                <select name="selectedMode" class="form-select">
-                    <option value="CBC">CBC</option>
-                    <option value="ECB">ECB</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Padding</label>
-                <select name="selectedPadding" class="form-select">
-                    <option value="PKCS7">PKCS7</option>
-                    <option value="Zeros">Zeros</option>
-                    <option value="None">None</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Encrypt File</button>
-        </form>
+        </div>
     </div>
 
-    <div class="col-md-6">
-        <h3>Decrypt File</h3>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title">Decrypt File</h3>
 
-        <form asp-action="Part2DecryptFile" method="post" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
+                <form asp-action="Part2DecryptFile" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
 
-            <div class="mb-3">
-                <label class="form-label">Encrypted bestand</label>
-                <input type="file" name="file" class="form-control" />
+                    <div class="mb-3">
+                        <label class="form-label">Encrypted bestand uploaden</label>
+                        <input type="file" name="file" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">AES Key (Base64)</label>
+                        <input type="text" name="key" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">IV (Base64)</label>
+                        <input type="text" name="iv" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cipher Mode</label>
+                        <select name="selectedMode" class="form-select">
+                            <option value="CBC">CBC</option>
+                            <option value="ECB">ECB</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Padding</label>
+                        <select name="selectedPadding" class="form-select">
+                            <option value="PKCS7">PKCS7</option>
+                            <option value="Zeros">Zeros</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Decrypt File</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">AES Key (Base64)</label>
-                <input type="text" name="key" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">IV (Base64)</label>
-                <input type="text" name="iv" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Cipher Mode</label>
-                <select name="selectedMode" class="form-select">
-                    <option value="CBC">CBC</option>
-                    <option value="ECB">ECB</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Padding</label>
-                <select name="selectedPadding" class="form-select">
-                    <option value="PKCS7">PKCS7</option>
-                    <option value="Zeros">Zeros</option>
-                    <option value="None">None</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-success">Decrypt File</button>
-        </form>
+        </div>
     </div>
 </div>
